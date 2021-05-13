@@ -56,140 +56,144 @@ namespace JF.WPFControls
             }
         }
 
-        private object selectedObject;
-
         public object SelectedObject
         {
-            get { return selectedObject; }
+            get { return (object)GetValue(SelectedObjectProperty); }
             set
             {
-                selectedObject = value;
-                _list.Children.Clear();
-                if (selectedObject == null) return;
-                var info = TypeVisualInfo.Get(selectedObject.GetType());
-                foreach (var prop in info.Props)
-                {
-                    if (!prop.OriginalProperty.CanWrite) continue;
-                    if (!prop.Browersable) continue;
-
-                    if (selectedObject is IList && prop.OriginalProperty.Name == "Item")
-                    {
-                        var items = selectedObject as IList;
-                        var innerInfo = TypeVisualInfo.Get(prop.OriginalProperty.PropertyType);
-                        var grid = new Grid() { Margin = new Thickness(2) };
-                        foreach(var p in innerInfo.Props.Where(m => m.Browersable))
-                        {
-                            grid.ColumnDefinitions.Add(new ColumnDefinition());
-                        }
-                        for (var i = 0; i < items.Count + 1; i++)
-                        {
-                            grid.RowDefinitions.Add(new RowDefinition());
-                        }
-                        var col = 0;
-                        var row = 0;
-                        foreach (var p in innerInfo.Props.Where(m => m.Browersable))
-                        {
-                            var head = new Label();
-                            head.Content = p.Alias ?? p.OriginalProperty.Name;
-                            Grid.SetColumn(head, col);
-                            Grid.SetRow(head, row);
-                            grid.Children.Add(head);
-                            col++;
-                        }
-                        row++;
-                        foreach (var item in items)
-                        {
-                            col = 0;
-                            foreach (var p in innerInfo.Props.Where(m => m.Browersable))
-                            {
-                                var editor = GetEditor(p.OriginalProperty.PropertyType);
-                                if (editor != null)
-                                {
-                                    editor.SelectedObject = item;
-                                    editor.Property = p.OriginalProperty;
-                                    var ui = editor as UIElement;
-                                    grid.Children.Add(ui);
-                                    Grid.SetColumn(ui, col);
-                                    Grid.SetRow(ui, row);
-                                }
-                                col++;
-                            }
-                            row++;
-                        }
-                        _list.Children.Add(grid);
-                        if (selectedObject is IBindingList)
-                        {
-                            var bindingList = selectedObject as IBindingList;
-                            bindingList.ListChanged += (sender, args) =>
-                            {
-                                switch (args.ListChangedType)
-                                {
-                                    case ListChangedType.Reset:
-                                        
-                                        break;
-                                    case ListChangedType.ItemChanged:
-                                        break;
-                                    case ListChangedType.ItemAdded:
-                                        break;
-                                    case ListChangedType.ItemDeleted:
-                                        break;
-                                }
-                            };
-                        }
-                        else if (selectedObject is INotifyCollectionChanged)
-                        {
-                            var collection = selectedObject as INotifyCollectionChanged;
-                            collection.CollectionChanged += (sender, args) =>
-                            {
-                                switch (args.Action)
-                                {
-                                    case NotifyCollectionChangedAction.Add:
-                                        break;
-                                    case NotifyCollectionChangedAction.Remove:
-                                        break;
-                                    case NotifyCollectionChangedAction.Replace:
-                                        break;
-                                    case NotifyCollectionChangedAction.Reset:
-                                        break;
-                                    case NotifyCollectionChangedAction.Move:
-                                        break;
-                                }
-                            };
-                        }
-                    }
-                    else
-                    {
-                        var panel = new DockPanel() { Margin = new Thickness(2) };
-                        var editor = GetEditor(prop.OriginalProperty.PropertyType);
-                        if (editor != null)
-                        {
-                            editor.SelectedObject = selectedObject;
-                            editor.Property = prop.OriginalProperty;
-                            panel.Children.Add(editor as UIElement);
-                            DockPanel.SetDock(editor as UIElement, Dock.Right);
-                        }
-
-                        var label = new Label() { Content = prop.Alias ?? prop.OriginalProperty.Name, MinWidth = 120 };
-                        panel.Children.Add(label);
-
-                        _list.Children.Add(panel);
-                    }
-                    if (prop.Description != null)
-                    {
-                        _list.Children.Add(new Label
-                        {
-                            Content = prop.Description,
-                            Foreground = Brushes.Gray,
-                            Margin = new Thickness(2, 0, 2, 2)
-                        });
-                    }
-                }
+                SetValue(SelectedObjectProperty, value);
+                BuildGrids();
             }
         }
 
-        void GridListInsertRow(Grid grid, int row, TypeVisualInfo typeInfo, object obj)
-        {
+        // Using a DependencyProperty as the backing store for SelectedObject.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedObjectProperty =
+            DependencyProperty.Register("SelectedObject", typeof(object), typeof(PropertyGrid), new PropertyMetadata(0));
 
+
+        void BuildGrids()
+        {
+            _list.Children.Clear();
+            var selectedObject = SelectedObject;
+            if (selectedObject == null) return;
+            var info = TypeVisualInfo.Get(selectedObject.GetType());
+            foreach (var prop in info.Props)
+            {
+                if (!prop.OriginalProperty.CanWrite) continue;
+                if (!prop.Browersable) continue;
+
+                if (selectedObject is IList && prop.OriginalProperty.Name == "Item")
+                {
+                    var items = selectedObject as IList;
+                    var innerInfo = TypeVisualInfo.Get(prop.OriginalProperty.PropertyType);
+                    var grid = new Grid() { Margin = new Thickness(2) };
+                    foreach (var p in innerInfo.Props.Where(m => m.Browersable))
+                    {
+                        grid.ColumnDefinitions.Add(new ColumnDefinition());
+                    }
+                    for (var i = 0; i < items.Count + 1; i++)
+                    {
+                        grid.RowDefinitions.Add(new RowDefinition());
+                    }
+                    var col = 0;
+                    var row = 0;
+                    foreach (var p in innerInfo.Props.Where(m => m.Browersable))
+                    {
+                        var head = new Label();
+                        head.Content = p.Alias ?? p.OriginalProperty.Name;
+                        Grid.SetColumn(head, col);
+                        Grid.SetRow(head, row);
+                        grid.Children.Add(head);
+                        col++;
+                    }
+                    row++;
+                    foreach (var item in items)
+                    {
+                        col = 0;
+                        foreach (var p in innerInfo.Props.Where(m => m.Browersable))
+                        {
+                            var editor = GetEditor(p.OriginalProperty.PropertyType);
+                            if (editor != null)
+                            {
+                                editor.SelectedObject = item;
+                                editor.Property = p.OriginalProperty;
+                                var ui = editor as UIElement;
+                                grid.Children.Add(ui);
+                                Grid.SetColumn(ui, col);
+                                Grid.SetRow(ui, row);
+                            }
+                            col++;
+                        }
+                        row++;
+                    }
+                    _list.Children.Add(grid);
+                    if (selectedObject is IBindingList)
+                    {
+                        var bindingList = selectedObject as IBindingList;
+                        bindingList.ListChanged += (sender, args) =>
+                        {
+                            switch (args.ListChangedType)
+                            {
+                                case ListChangedType.Reset:
+
+                                    break;
+                                case ListChangedType.ItemChanged:
+                                    break;
+                                case ListChangedType.ItemAdded:
+                                    break;
+                                case ListChangedType.ItemDeleted:
+                                    break;
+                            }
+                        };
+                    }
+                    else if (selectedObject is INotifyCollectionChanged)
+                    {
+                        var collection = selectedObject as INotifyCollectionChanged;
+                        collection.CollectionChanged += (sender, args) =>
+                        {
+                            switch (args.Action)
+                            {
+                                case NotifyCollectionChangedAction.Add:
+                                    break;
+                                case NotifyCollectionChangedAction.Remove:
+                                    break;
+                                case NotifyCollectionChangedAction.Replace:
+                                    break;
+                                case NotifyCollectionChangedAction.Reset:
+                                    break;
+                                case NotifyCollectionChangedAction.Move:
+                                    break;
+                            }
+                        };
+                    }
+                }
+                else
+                {
+                    var panel = new DockPanel() { Margin = new Thickness(2) };
+                    var editor = GetEditor(prop.OriginalProperty.PropertyType);
+                    if (editor != null)
+                    {
+                        editor.SelectedObject = selectedObject;
+                        editor.Property = prop.OriginalProperty;
+                        panel.Children.Add(editor as UIElement);
+                        DockPanel.SetDock(editor as UIElement, Dock.Right);
+                    }
+
+                    var label = new Label() { Content = prop.Alias ?? prop.OriginalProperty.Name, MinWidth = 120 };
+                    panel.Children.Add(label);
+
+                    _list.Children.Add(panel);
+                }
+                if (prop.Description != null)
+                {
+                    _list.Children.Add(new Label
+                    {
+                        Content = prop.Description,
+                        Foreground = Brushes.Gray,
+                        Margin = new Thickness(2, 0, 2, 2)
+                    });
+                }
+            }
         }
 
         IPropertyEditor GetEditor(Type valueType)
