@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="JF.WPFControls.DefaultEditors.Switch"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:JF.WPFControls.DefaultEditors"
+      mc:Ignorable="d" 
+      Width="58"
+      Height="34">
+
+    <Grid>
+        <Border BorderThickness="1" Margin="4,2"
+                BorderBrush="BurlyWood"
+                Height="28"
+                Background="Green"
+                CornerRadius="14">
+            <Border
+                Background="White"
+                Width="24"
+                Height="24"
+                Margin="1"
+                HorizontalAlignment="Left"
+                CornerRadius="12"
+            >
+                
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>
