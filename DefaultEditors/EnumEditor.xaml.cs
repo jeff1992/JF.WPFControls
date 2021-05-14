@@ -83,7 +83,7 @@ namespace JF.WPFControls.DefaultEditors
 
         void SetValue()
         {
-            if (SelectedObject == null || Property == null) return;
+            if (SelectedObject == null || Property == null || !Property.CanWrite) return;
             Property.SetValue(SelectedObject, _c.SelectedItem);
         }
     }

@@ -56,6 +56,30 @@ namespace JF.WPFControls
             }
         }
 
+        static Color hoverBackgroundColor = new Color { R = 0xf0, G = 0xf1, B = 0xf5, A = 0xff };
+        static Brush hoverBackgroundBrush = new SolidColorBrush(hoverBackgroundColor);
+
+        static Style propertyHoverStyle;
+        static Style PropertyHoverStyle
+        {
+            get
+            {
+                if (propertyHoverStyle==null)
+                {
+                    propertyHoverStyle = new Style(typeof(DockPanel));
+                    var trigger = new Trigger()
+                    {
+                        Property = DockPanel.IsMouseOverProperty,
+                        Value = true,
+                    };
+                    trigger.Setters.Add(new Setter(DockPanel.BackgroundProperty, hoverBackgroundBrush));
+                    propertyHoverStyle.Triggers.Add(trigger);
+                }
+                return propertyHoverStyle;
+            }
+        }
+
+
         public object SelectedObject
         {
             get { return (object)GetValue(SelectedObjectProperty); }
@@ -70,18 +94,28 @@ namespace JF.WPFControls
         public static readonly DependencyProperty SelectedObjectProperty =
             DependencyProperty.Register("SelectedObject", typeof(object), typeof(PropertyGrid), new PropertyMetadata(0));
 
-
         void BuildGrids()
         {
             _list.Children.Clear();
             var selectedObject = SelectedObject;
             if (selectedObject == null) return;
             var info = TypeVisualInfo.Get(selectedObject.GetType());
-            foreach (var prop in info.Props)
+            string lastCategory = null;
+            foreach (var prop in info.Props.OrderBy(m=>m.Category))
             {
                 if (!prop.OriginalProperty.CanWrite) continue;
                 if (!prop.Browersable) continue;
-
+                //add category ui
+                if (lastCategory != prop.Category)
+                {
+                    var cateUI = new Label
+                    {
+                        Content = prop.Category,
+                        Background = Brushes.LightGray
+                    };
+                    _list.Children.Add(cateUI);
+                    lastCategory = prop.Category;
+                }
                 if (selectedObject is IList && prop.OriginalProperty.Name == "Item")
                 {
                     var items = selectedObject as IList;
@@ -126,7 +160,9 @@ namespace JF.WPFControls
                         }
                         row++;
                     }
-                    _list.Children.Add(grid);
+                    var container = new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Auto };
+                    container.Content = grid;
+                    _list.Children.Add(container);
                     if (selectedObject is IBindingList)
                     {
                         var bindingList = selectedObject as IBindingList;
@@ -169,7 +205,7 @@ namespace JF.WPFControls
                 }
                 else
                 {
-                    var panel = new DockPanel() { Margin = new Thickness(2) };
+                    var panel = new DockPanel() { Margin = new Thickness(2), Style = PropertyHoverStyle };
                     var editor = GetEditor(prop.OriginalProperty.PropertyType);
                     if (editor != null)
                     {

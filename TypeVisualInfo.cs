@@ -44,6 +44,10 @@ namespace JF.WPFControls
                         {
                             prop.Browersable = (attr as BrowsableAttribute).Browsable;
                         }
+                        else if (t == typeof(CategoryAttribute))
+                        {
+                            prop.Category = (attr as CategoryAttribute).Category;
+                        }
                     }
                     info.Props.Add(prop);
                 }

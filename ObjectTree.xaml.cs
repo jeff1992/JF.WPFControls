@@ -104,6 +104,7 @@ namespace JF.WPFControls
                         Header = prop.Alias ?? prop.OriginalProperty.Name,
                         Tag = value
                     };
+                    Console.WriteLine($"add {node.Header}");
                     container.Add(node);
                     BuildTree(node.Items, value);
                 }
@@ -121,7 +122,10 @@ namespace JF.WPFControls
                     {
                         (obj as INotifyPropertyChanged).PropertyChanged += (sender, args) =>
                         {
-                            node.Header = sender.ToString();
+                            if (Dispatcher.CheckAccess())
+                                node.Header = sender.ToString();
+                            else
+                                Dispatcher.Invoke(() => node.Header = sender.ToString());
                         };
                     }
                 }
