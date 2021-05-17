@@ -122,10 +122,13 @@ namespace JF.WPFControls
                     {
                         (obj as INotifyPropertyChanged).PropertyChanged += (sender, args) =>
                         {
-                            if (Dispatcher.CheckAccess())
-                                node.Header = sender.ToString();
-                            else
-                                Dispatcher.Invoke(() => node.Header = sender.ToString());
+                            if (dept.Properties.Contains(args.PropertyName))
+                            {
+                                if (Dispatcher.CheckAccess())
+                                    node.Header = sender.ToString();
+                                else
+                                    Dispatcher.Invoke(() => node.Header = sender.ToString());
+                            }
                         };
                     }
                 }
