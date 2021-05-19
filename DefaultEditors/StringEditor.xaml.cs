@@ -83,5 +83,13 @@ namespace JF.WPFControls.DefaultEditors
         {
             SetValue();
         }
+
+        private void _c_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                SetValue();
+            }
+        }
     }
 }

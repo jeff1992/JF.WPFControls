@@ -7,6 +7,6 @@
              MinWidth="120"
              mc:Ignorable="d">
     <Grid>
-        <TextBox x:Name="_c" LostFocus="_c_LostFocus"></TextBox>
+        <TextBox x:Name="_c" LostFocus="_c_LostFocus" KeyUp="_c_KeyUp"></TextBox>
     </Grid>
 </UserControl>

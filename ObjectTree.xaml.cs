@@ -152,14 +152,35 @@ namespace JF.WPFControls
                     {
                         var addProps = obj.GetType().GetMethod("Add").GetParameters();
                         var t = addProps[0].ParameterType;
-                        var types = Assembly.GetAssembly(t).GetTypes().Where(m => t.IsAssignableFrom(m) && !m.IsAbstract);
+                        var assembly = Assembly.GetAssembly(t);
+                        var types = assembly.GetTypes().Where(m => t.IsAssignableFrom(m) && !m.IsAbstract);
                         Type instanceType = null;
                         if (types.Count() == 1)
                             instanceType = types.First();
                         else
                         {
                             var infos = types.Select(m => TypeVisualInfo.Get(m)).ToList();
-
+                            var _win = new Window();
+                            _win.Height = 300;
+                            _win.Width = 300;
+                            var _panel = new StackPanel();
+                            foreach(var info in infos)
+                            {
+                                var _btn = new Button();
+                                _btn.Tag = info;
+                                _btn.Content = info.Alias;
+                                _btn.Margin = new Thickness(4);
+                                _btn.Click += (sender1, args) =>
+                                {
+                                    var tagInfo = (sender1 as Button).Tag as TypeVisualInfo;
+                                    instanceType = tagInfo.OriginalType;
+                                    _win.Close();
+                                };
+                                _panel.Children.Add(_btn);
+                            }
+                            _win.Content = _panel;
+                            _win.Owner = Window.GetWindow(this);
+                            _win.ShowDialog();
                         }
                         if (instanceType == null) return;
                         var instance = Assembly.GetAssembly(instanceType).CreateInstance(instanceType.FullName);
