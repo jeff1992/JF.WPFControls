@@ -92,7 +92,8 @@ namespace JF.WPFControls
             }
             else
             {
-                foreach (var prop in TypeVisualInfo.Get(obj.GetType()).Props)
+                var props = TypeVisualInfo.Get(obj.GetType()).Props;
+                foreach (var prop in props)
                 {
                     if (prop.OriginalProperty.PropertyType.IsValueType || prop.OriginalProperty.PropertyType == typeof(string))
                         continue;

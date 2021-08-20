@@ -50,6 +50,7 @@ namespace JF.WPFControls
                     defaultEditors.Add(typeof(float), typeof(NumberEditor));
                     defaultEditors.Add(typeof(double), typeof(NumberEditor));
                     defaultEditors.Add(typeof(decimal), typeof(NumberEditor));
+                    DefaultEditors.Add(typeof(Point), typeof(PointEditor));
                     defaultEditors.Add(typeof(object), typeof(ObjectEditor));
                 }
                 return defaultEditors;
