@@ -7,7 +7,7 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <ContextMenu x:Key="ContextMenu">
-            <MenuItem x:Name="_listAdd" Header="添加元素" ContextMenuOpening="ListAddOpening"></MenuItem>
+            <MenuItem x:Name="_listAdd" Header="添加元素"></MenuItem>
         </ContextMenu>
     </UserControl.Resources>
     <Grid>

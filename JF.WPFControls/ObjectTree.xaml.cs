@@ -31,22 +31,6 @@ namespace JF.WPFControls
             }
         }
 
-        private ContextMenu contextMenu;
-
-        public ContextMenu ContextMenu
-        {
-            get
-            {
-                if (contextMenu == null)
-                {
-                    //构造命令
-
-                    contextMenu = new ContextMenu();
-                }
-                return contextMenu;
-            }
-        }
-
         public object Root
         {
             get => GetValue(RootProperty);
@@ -103,7 +87,7 @@ namespace JF.WPFControls
                     {
                         //Header = (alias ?? prop.Name) + (value == null ? "" : $" :{value}"),
                         Header = prop.Alias ?? prop.OriginalProperty.Name,
-                        Tag = value
+                        Tag = value                        
                     };
                     Console.WriteLine($"add {node.Header}");
                     container.Add(node);
@@ -195,6 +179,52 @@ namespace JF.WPFControls
                         SetBinding(newNode, instance);
                         BuildTree(newNode.Items, instance);
                     }
+                    else
+                    {
+                        var addProps = obj.GetType().GetMethod("Add").GetParameters();
+                        var t = addProps[0].ParameterType;
+                        var assembly = Assembly.GetAssembly(t);
+                        var types = assembly.GetTypes().Where(m => t.IsAssignableFrom(m) && !m.IsAbstract);
+                        Type instanceType = null;
+                        if (types.Count() == 1)
+                            instanceType = types.First();
+                        else
+                        {
+                            var infos = types.Select(m => TypeVisualInfo.Get(m)).ToList();
+                            var _win = new Window();
+                            _win.Height = 300;
+                            _win.Width = 300;
+                            var _panel = new StackPanel();
+                            foreach(var info in infos)
+                            {
+                                var _btn = new Button();
+                                _btn.Tag = info;
+                                _btn.Content = info.Alias;
+                                _btn.Margin = new Thickness(4);
+                                _btn.Click += (sender1, args) =>
+                                {
+                                    var tagInfo = (sender1 as Button).Tag as TypeVisualInfo;
+                                    instanceType = tagInfo.OriginalType;
+                                    _win.Close();
+                                };
+                                _panel.Children.Add(_btn);
+                            }
+                            _win.Content = _panel;
+                            _win.Owner = Window.GetWindow(this);
+                            _win.ShowDialog();
+                        }
+                        if (instanceType == null) return;
+                        var instance = Assembly.GetAssembly(instanceType).CreateInstance(instanceType.FullName);
+                        (obj as IList).Add(instance);
+                        var newNode = new TreeViewItem
+                        {
+                            Header = instance,
+                            Tag = instance
+                        };
+                        node.Items.Add(newNode);
+                        SetBinding(newNode, instance);
+                        BuildTree(newNode.Items, instance);
+                    }
                     break;
                 case Key.Delete:
                     if ((node.Parent as TreeViewItem)?.Tag is IList)
@@ -205,14 +235,6 @@ namespace JF.WPFControls
                     }
                     break;
             }
-        }
-
-        private void ListAddOpening(object sender, ContextMenuEventArgs e)
-        {
-            var selectedObject = (_tree.SelectedItem as TreeViewItem).Tag;
-            if (selectedObject == null)
-                return;
-
         }
 
     }
