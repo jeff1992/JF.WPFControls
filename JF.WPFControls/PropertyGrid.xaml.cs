@@ -87,13 +87,15 @@ namespace JF.WPFControls
             set
             {
                 SetValue(SelectedObjectProperty, value);
-                BuildGrids();
             }
         }
 
         // Using a DependencyProperty as the backing store for SelectedObject.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedObjectProperty =
-            DependencyProperty.Register("SelectedObject", typeof(object), typeof(PropertyGrid), new PropertyMetadata(0));
+            DependencyProperty.Register("SelectedObject", typeof(object), typeof(PropertyGrid), new PropertyMetadata(null, (sender, args) =>
+            {
+                (sender as PropertyGrid).BuildGrids();
+            }));
 
         void BuildGrids()
         {
